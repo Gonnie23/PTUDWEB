@@ -12,9 +12,9 @@ namespace _63CNTT5N1.Controllers
         // GET: Site
         public ActionResult Index()
         {
-            //MyDBContext db = new MyDBContext();
-            //int sodong = db.Products.Count();
-            //ViewBag.sodong = sodong;
+            MyDBContext db = new MyDBContext();
+            int count = db.Products.Count();
+            ViewBag.choi = count;
             return View();
         }
     }
