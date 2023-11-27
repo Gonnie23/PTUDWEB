@@ -91,7 +91,7 @@ namespace _63CNTT5N1.Areas.Admin.Controllers
                     {
                         string slug = suppliers.Slug;
                         //ten file = Slug + phan mo rong cua tap tin
-                        string imgName = slug + suppliers.Id + img.FileName.Substring(img.FileName.LastIndexOf("."));
+                        string imgName = slug + img.FileName.Substring(img.FileName.LastIndexOf("."));
                         suppliers.Img = imgName;
                         //upload hinh
                         string PathDir = "~/Public/img/supplier";
@@ -150,31 +150,34 @@ namespace _63CNTT5N1.Areas.Admin.Controllers
                 }
                 //Xu ly tu dong: Slug
                 suppliers.Slug = XString.Str_Slug(suppliers.Name);
+                //xu ly cho phan upload hinh anh
                 var img = Request.Files["img"];//lay thong tin file
                 string PathDir = "~/Public/img/supplier";
                 if (img.ContentLength != 0)
                 {
+                    //Xu ly cho muc xoa hinh anh
+                    if (suppliers.Img != null)
+                    {
+                        string DelPath = Path.Combine(Server.MapPath(PathDir), suppliers.Img);
+                        System.IO.File.Delete(DelPath);
+                    }
+
                     string[] FileExtentions = new string[] { ".jpg", ".jpeg", ".png", ".gif" };
                     //kiem tra tap tin co hay khong
                     if (FileExtentions.Contains(img.FileName.Substring(img.FileName.LastIndexOf("."))))//lay phan mo rong cua tap tin
                     {
                         string slug = suppliers.Slug;
                         //ten file = Slug + phan mo rong cua tap tin
-                        string imgName = slug + suppliers.Id + img.FileName.Substring(img.FileName.LastIndexOf("."));
+                        string imgName = slug + img.FileName.Substring(img.FileName.LastIndexOf("."));
                         suppliers.Img = imgName;
                         //upload hinh
-                        
                         string PathFile = Path.Combine(Server.MapPath(PathDir), imgName);
                         img.SaveAs(PathFile);
                     }
-                    // xu ly cho muc xoa hinh anh
-                    if (suppliers.Img != null)
-                    {
-                        string DelPath = Path.Combine(Server.MapPath(PathDir), suppliers.Img);
-                        System.IO.File.Delete(DelPath);
-                    }
+
                 }//ket thuc phan upload hinh anh
-                
+
+
                 // cập nhật mâu tin vào DB
                 suppliersDAO.Update(suppliers);
                 // thong bao thanh cong:
@@ -211,10 +214,21 @@ namespace _63CNTT5N1.Areas.Admin.Controllers
         {
             Suppliers suppliers = suppliersDAO.getRow(id);
             // xoa
-            suppliersDAO.Delete(suppliers);
+            var img = Request.Files["img"];//lay thong tin file
+            string PathDir = "~/Public/img/supplier";
+            if (suppliersDAO.Delete(suppliers) == 1)
+            {
+                //Xu ly cho muc xoa hinh anh
+                if (suppliers.Img != null)
+                {
+                    string DelPath = Path.Combine(Server.MapPath(PathDir), suppliers.Img);
+                    System.IO.File.Delete(DelPath);
+                }
+            }
+            
             // thong bao xoa thanh cong:
             TempData["message"] = new XMessage("success", "Tạo mới nhà cung cấp thành công");
-            return RedirectToAction("Index");
+            return RedirectToAction("Trash");
         }
         // phat sinh them 1 so action: Status, Trash, Deltrash, Undo (phuc hoi)
         public ActionResult Status(int? id)
